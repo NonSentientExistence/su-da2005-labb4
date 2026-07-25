@@ -32,6 +32,7 @@ def check_is_within_unit_circle(x, y):
     else:
         return False
     
+
 def calc_batch_average(data):
     """
     Calculate the avarage of input measurments within the unit circle
@@ -50,6 +51,20 @@ def calc_batch_average(data):
     average = total / count
     return average
 
+def calc_all_averages(data):
+    """
+    Calculate the average per bath in a dataset
+
+    Takes dict as input parameter with batch ID as key and list of (x, y, value) as values
+    
+    Returns dict with batch ID mapped to average value 
+    """
+
+    averages = {}
+    for batch, data in data.items():
+        averages[batch] = calc_batch_average(data)
+    return averages
+
 def print_batch_averages(data):
 
     """
@@ -64,3 +79,10 @@ def print_batch_averages(data):
     for batch, average in average.items():
         print(batch, "\t | ", average)
 
+def main():
+    """
+    Run the program: Ask for filename, analyze data in file and print the results to user
+    """
+    filename = input("Which CSV would you like to analyze?")
+    data = read_csv(filename)
+    averages = 
