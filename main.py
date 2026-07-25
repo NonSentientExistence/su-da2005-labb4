@@ -1,6 +1,17 @@
 # Uppgift 1: Förbättringar i strukturen
-# Refaktorerar om från en enda stor main funktion till tre mindre funktioner med tydligt syfta och "ansvarsområde" (Inläsning från CSV, beräkningar, utskrift)
-# Beräkningsfunktionen skriver ej ut data utan returnerar bara resultatet.
+# Refaktorerar om från en enda stor main funktion till flera mindre funktioner med tydligt syfte och "ansvarsområde" (Inläsning från CSV, beräkningar, utskrift)
+# Beräkningsfunktionen skriver ej ut data utan returnerar bara resultatet när den anropas.
+
+def format_csv_line(line):
+    """
+    Formats a CSV line to a single str for display in warning message
+    
+    Takes raw line from CSV as input
+
+    Returns a single string of the values with a single space between values
+    """
+
+    return ' '.join(field.strip() for field in line.strip().split(','))
 
 def read_csv(filename):
     
@@ -65,7 +76,7 @@ def calc_all_averages(data):
         averages[batch] = calc_batch_average(data)
     return averages
 
-def print_batch_averages(data):
+def print_batch_averages(averages):
 
     """
     Print the batch averages to user
@@ -76,14 +87,18 @@ def print_batch_averages(data):
 
     print("Batch\t | Average")
     
-    for batch, average in average.items():
+    for batch, average in averages.items():
         print(batch, "\t | ", average)
 
 def main():
     """
     Run the program: Ask for filename, analyze data in file and print the results to user
     """
-    filename = input("Which CSV would you like to analyze?")
+    filename = input("Which CSV would you like to analyze?\n")
     data = read_csv(filename)
     averages = calc_all_averages(data)
     print_batch_averages(averages)
+
+# Run program if executed directly. If this file gets imported, main will not execute
+if __name__ == '__main__':
+    main()
