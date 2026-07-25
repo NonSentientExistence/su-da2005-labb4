@@ -85,4 +85,5 @@ def main():
     """
     filename = input("Which CSV would you like to analyze?")
     data = read_csv(filename)
-    averages = 
+    averages = calc_all_averages(data)
+    print_batch_averages(averages)
