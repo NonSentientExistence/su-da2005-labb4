@@ -15,15 +15,26 @@ def format_csv_line(line):
 
 def read_csv(filename):
     
-    # Read data from CSV
+    # Reads data from CSV
+    # 
+    # Takes a string as parameter which should be the file name
+    # Opens the vile and converts raw csv data to a dict
+    #
     # Returns a dict with batch as key and list with values
+    #
+    # This function will return a FileNotFoundError if unable to open the file
+    # FileNotFoundError will be caught in main()
+
 
     data = {}
     with open(filename, 'r') as file:
         for line in file:
-            batch, x, y, value = line.split(',')
-            batch = batch.strip()
-
+            try:
+                batch, x, y, value = line.split(',')
+                batch = batch.strip()
+            except ValueError:
+                print(f"Warning: wrong input format for entry: {format_csv_line(line)}")
+                continue
             if batch not in data: 
                 data[batch] = []
             data[batch].append((float(x), float(y), float(value)))
@@ -95,7 +106,11 @@ def main():
     Run the program: Ask for filename, analyze data in file and print the results to user
     """
     filename = input("Which CSV would you like to analyze?\n")
-    data = read_csv(filename)
+    try: 
+        data = read_csv(filename)
+    except FileNotFoundError:
+        print(f"File {filename} could not be found")
+        return
     averages = calc_all_averages(data)
     print_batch_averages(averages)
 
