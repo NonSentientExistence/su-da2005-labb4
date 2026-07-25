@@ -1,3 +1,6 @@
+import matplotlib.pyplot as plt
+import math
+
 # Uppgift 1: Förbättringar i strukturen
 # Refaktorerar om från en enda stor main funktion till flera mindre funktioner med tydligt syfte och "ansvarsområde" (Inläsning från CSV, beräkningar, utskrift)
 # Beräkningsfunktionen skriver ej ut data utan returnerar bara resultatet när den anropas.
@@ -14,30 +17,34 @@ def format_csv_line(line):
     return ' '.join(field.strip() for field in line.strip().split(','))
 
 def read_csv(filename):
+    """
+    Reads data from CSV
     
-    # Reads data from CSV
-    # 
-    # Takes a string as parameter which should be the file name
-    # Opens the vile and converts raw csv data to a dict
-    #
-    # Returns a dict with batch as key and list with values
-    #
-    # This function will return a FileNotFoundError if unable to open the file
-    # FileNotFoundError will be caught in main()
+    Takes a string as parameter which should be the file name
+    Opens the vile and converts raw csv data to a dict
+    
+    Returns a dict with batch as key and list with values
+    
+    This function will return a FileNotFoundError if unable to open the file
+    FileNotFoundError will be caught in main()
+    """
 
 
     data = {}
     with open(filename, 'r') as file:
         for line in file:
+            if not line.strip():
+                continue
             try:
                 batch, x, y, value = line.split(',')
-                batch = batch.strip()
+                point = (float(x), float(y), float(value))
             except ValueError:
                 print(f"Warning: wrong input format for entry: {format_csv_line(line)}")
                 continue
-            if batch not in data: 
+            batch = batch.strip()
+            if batch not in data:
                 data[batch] = []
-            data[batch].append((float(x), float(y), float(value)))
+            data[batch].append(point)
     return data
 
 
@@ -49,10 +56,7 @@ def check_is_within_unit_circle(x, y):
     Requirement for within unit circle, x**2 + y**2 <= 1
     """
 
-    if x**2 + y**2 <= 1:
-        return True
-    else:
-        return False
+    return x**2 + y**2 <= 1
     
 
 def calc_batch_average(data):
@@ -70,6 +74,8 @@ def calc_batch_average(data):
         if check_is_within_unit_circle(x,y):
             total += value
             count += 1
+    if count == 0:
+        return None
     average = total / count
     return average
 
@@ -83,8 +89,8 @@ def calc_all_averages(data):
     """
 
     averages = {}
-    for batch, data in data.items():
-        averages[batch] = calc_batch_average(data)
+    for batch, measurements in data.items():
+        averages[batch] = calc_batch_average(measurements)
     return averages
 
 def print_batch_averages(averages):
@@ -96,10 +102,39 @@ def print_batch_averages(averages):
 
     """
 
+    for batch, average in averages.items():
+        if average is None:
+            print(f"Warning: Batch {batch} has no measurements inside the unit circle.")
+
     print("Batch\t | Average")
     
-    for batch, average in averages.items():
+    for batch, average in sorted(averages.items()):
+        if average is None: 
+            continue
         print(batch, "\t | ", average)
+
+def plot_data(data, output_filename):
+
+    """
+    Plots all measurements on top of the unit circle and saves and output_filename + .pdf-
+
+    All measurements will be plotted, even if outside the unit circle. Each batch has a unique color code
+    and each point will be labled with its value. 
+
+    Takes dict as parameter and name of the output PDF. 
+    Required input dict is the dict from read_csv before average calculations. 
+    Passing None to the func will only draw the circle, for testing purposes. 
+    """
+    # Calculate 150 coordinates to draw the circle
+    angles = [ n/150 * 2 * math.pi for n in range(151) ]
+    x_coords = [ math.cos(a) for a in angles ]
+    y_coords = [ math.sin(a) for a in angles ]
+    # Draw the circle
+    plt.plot(x_coords,y_coords)
+    
+
+    
+    plt.savefig(f + ".pdf")
 
 def main():
     """
