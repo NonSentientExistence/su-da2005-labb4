@@ -17,3 +17,36 @@ def read_csv(filename):
                 data[batch] = []
             data[batch].append((float(x), float(y), float(value)))
     return data
+
+
+def check_is_within_unit_circle(x, y):
+    """ 
+    Check if a point is within the unit circle
+    Takes x and y value as parameters
+    Returns bool, True if value is withtin unit circle, False if not.
+    Requirement for within unit circle, x**2 + y**2 <= 1
+    """
+
+    if x**2 + y**2 <= 1:
+        return True
+    else:
+        return False
+    
+def calc_batch_average(data):
+    """
+    Calculate the avarage of input measurments within the unit circle
+
+    Parameters required are a list with (x, y, value)
+
+    Returns a float for each point that is within the unit circle (check_is_within_unit_circle is True)
+    """
+
+    total = 0
+    count = 0
+    for x, y, value in data:
+        if check_is_within_unit_circle(x,y):
+            total += value
+            count += 1
+    average = total / count
+    return average
+
