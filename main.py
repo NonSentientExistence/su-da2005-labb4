@@ -50,3 +50,17 @@ def calc_batch_average(data):
     average = total / count
     return average
 
+def print_batch_averages(data):
+
+    """
+    Print the batch averages to user
+
+    Takes a dict as parameter and prints each batch nr and average value for that batch
+
+    """
+
+    print("Batch\t | Average")
+    
+    for batch, average in average.items():
+        print(batch, "\t | ", average)
+
