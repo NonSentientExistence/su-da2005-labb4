@@ -132,9 +132,17 @@ def plot_data(data, output_filename):
     # Draw the circle
     plt.plot(x_coords,y_coords)
     
+    if data is not None:
+        for measurements in data.values():
+            batch_x = [x for x, y, value in measurements]
+            batch_y = [y for x, y, value in measurements]
+            # Calls plt.plot once per batch. plotlib will pick a color from deafult cycle automatically
+            plotted_points = plt.plot(batch_x, batch_y, 'o')
+            batch_color = plotted_points[0].get_color()
+            for x, y, value in measurements:
+                plt.annotate(str(value), (x, y), color=batch_color)
 
-    
-    plt.savefig(f + ".pdf")
+    plt.savefig(output_filename + ".pdf")
 
 def main():
     """
@@ -148,6 +156,10 @@ def main():
         return
     averages = calc_all_averages(data)
     print_batch_averages(averages)
+
+    output_filename = filename.rsplit( ".", 1 )[ 0 ]
+    plot_data(data, output_filename)
+    print(f"A plot of the data can be found in {output_filename}.pdf.")
 
 # Run program if executed directly. If this file gets imported, main will not execute
 if __name__ == '__main__':
