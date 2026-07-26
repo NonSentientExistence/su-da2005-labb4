@@ -1,9 +1,70 @@
 import matplotlib.pyplot as plt
 import math
+"""
+Uppgift 1: Förbättringar i strukturen
 
-# Uppgift 1: Förbättringar i strukturen
-# Refaktorerar om från en enda stor main funktion till flera mindre funktioner med tydligt syfte och "ansvarsområde" (Inläsning från CSV, beräkningar, utskrift)
-# Beräkningsfunktionen skriver ej ut data utan returnerar bara resultatet när den anropas.
+Refaktorerar om från en enda stor main funktion till flera mindre funktioner
+med tydligt syfte och ansvar (Inläsning av CSV, beräkningar, utskrift)
+Beräkningsfunktionen skriver ej ut data utan returnerar bara resultatet när den anropas.
+Filinläsningsfunktionen rensar tomma rader från CSV, 
+så som mellanslag och eller blank rad. 
+
+En miss jag kan se i min kod är att tex read_csv skriver ut varningen
+för felformatering. Den borde bara läsa, inte skriva ut något.
+
+Labbhäftet har ej instruktion för hur detta ska hanteras så (vad jag kunde se)
+jag gjorde ett val att hantera det som en formateringsartefakt
+och inte som felaktig mätdata. 
+
+Uppgift 2: Felhantering
+
+Fel som rättats:
+1. Programmet kraschade om det inte kunde läsa en fil, ger nu ett fel istället.
+2. Programmet kunde inte hantera felformaterad data och kraschade. Ger
+nu en varning till användaren att data var felformaterad och vad 
+datan i det fältet var.
+3. Programmet kraschade vid tomma fält (bara whitespace eller cr)
+Formateringsartefakter rensas nu bort i read_csv.
+
+Felhantering är implementerad i read_csv för inkorrekt formaterad data.
+Om funktionen ej får en korrekt formaterad rad så kommer den skriva
+ut en varning. 
+Jag hade hellre satt att den returnerar fel data och sedan låter print
+funktionen skriva ut det till användaren. Läs funktionen borde bara läsa
+och returnera data, inte skriva ut den men jag hade inte tid att justera.
+
+format_csv_line funktionen finns bara för att formatera en felaktig
+rad från CSV filen för utskrift. Detta för att matcha exakt som 
+det är angivet i labbhäftet.
+
+Hade jag lagt in mer funktionalitet hade jag valt att också lägga 
+in radnummer från CSV som var fel för att lättare hitta i en 
+stor CSV fil.
+
+main() hanterar fel från read_csv. Den funktionen ger FileNotFoundError
+om den inte kan läsa felet naturligt. Tycker det ligger korrekt där
+då funktionen i sig inte borde sköta felrapporteringen. Alternativt
+låta funktionen returnera feldata men inte skriva ut den. 
+
+Uppgift 3: Sorterade batch-data
+Löst med en sorted i print_batch_averages for loop. Denna imlementering av
+sorted fungerar för denna uppgift. Utan key så sorterar den alfabetiskt.
+Key i dicten är en sträng så det funkar upp till 9. Efter detta kommer 
+10 sorteras efter 1. Man hade behövt konvertera key till int för längre
+csv med mätdata.
+
+Uppgift 4: Plotta värdena
+Plottar ut värdena från dict som fås från read_csv. Cirkeln ritas ut
+av koden från labbhäftet. if data is not None tillåter att cirkeln ritas
+ut även om mätdata saknas. 
+for loopen extraherar x och y för varje värde samt värdet. För varje
+batch i dicten anropas plot en gång. Plotlib sätter då en färg automatiskt
+och sedan ställs frågan om vilken färg den batchen fick med color().
+Detta används för att sätta en unik färg på varje batch av mätvärden.
+Begränsas av antalet färger i default schemat i pltlib.
+
+
+"""
 
 def format_csv_line(line):
     """
@@ -21,18 +82,23 @@ def read_csv(filename):
     Reads data from CSV
     
     Takes a string as parameter which should be the file name
-    Opens the vile and converts raw csv data to a dict
+    Opens the file and converts raw csv data to a dict
     
     Returns a dict with batch as key and list with values
     
     This function will return a FileNotFoundError if unable to open the file
     FileNotFoundError will be caught in main()
+
+    This function will remove empty lines (only whitespace or cr)
+
+    with open closes the file automatically
     """
 
 
     data = {}
     with open(filename, 'r') as file:
         for line in file:
+            # Cleans read data from file from fields of whitespaces or cr
             if not line.strip():
                 continue
             try:
@@ -51,9 +117,13 @@ def read_csv(filename):
 def check_is_within_unit_circle(x, y):
     """ 
     Check if a point is within the unit circle
+
     Takes x and y value as parameters
+
     Returns bool, True if value is withtin unit circle, False if not.
     Requirement for within unit circle, x**2 + y**2 <= 1
+
+    If/else is not required as the return value on the calc is already tru/fal
     """
 
     return x**2 + y**2 <= 1
@@ -65,7 +135,11 @@ def calc_batch_average(data):
 
     Parameters required are a list with (x, y, value)
 
-    Returns a float for each point that is within the unit circle (check_is_within_unit_circle is True)
+    Returns a float with the calculated average for all points that
+    are within the unit circle, in that batch.
+    (check_is_within_unit_circle is True)
+
+    If no points in that batch is within the unit circle, return None
     """
 
     total = 0
@@ -81,7 +155,7 @@ def calc_batch_average(data):
 
 def calc_all_averages(data):
     """
-    Calculate the average per bath in a dataset
+    Calculate the average per batch in a dataset
 
     Takes dict as input parameter with batch ID as key and list of (x, y, value) as values
     
@@ -98,7 +172,10 @@ def print_batch_averages(averages):
     """
     Print the batch averages to user
 
-    Takes a dict as parameter and prints each batch nr and average value for that batch
+    Takes a dict as parameter and prints each batch nr and average of the
+    values within the unit circle for that batch.
+    Prints them sorted on the dict key alphabetically. 
+    Needs key as int if there are more then 9 batches in the CSV.
 
     """
 
@@ -116,14 +193,17 @@ def print_batch_averages(averages):
 def plot_data(data, output_filename):
 
     """
-    Plots all measurements on top of the unit circle and saves and output_filename + .pdf-
+    Plots all measurements on top of the unit circle and saves
+    a PDF of the plotted data as output_filename + .pdf
 
-    All measurements will be plotted, even if outside the unit circle. Each batch has a unique color code
+    All measurements will be plotted, even if outside the unit circle. 
+    Each batch has a unique color code
     and each point will be labled with its value. 
 
-    Takes dict as parameter and name of the output PDF. 
-    Required input dict is the dict from read_csv before average calculations. 
-    Passing None to the func will only draw the circle, for testing purposes. 
+    Takes dict as parameter and a string for name of the output PDF.
+    Required input dict is the dict from read_csv before average calculations.
+    Passing None to the func will only draw the circle, for testing purposes.
+
     """
     # Calculate 150 coordinates to draw the circle
     angles = [ n/150 * 2 * math.pi for n in range(151) ]
@@ -160,7 +240,12 @@ def main():
     output_filename = filename.rsplit( ".", 1 )[ 0 ]
     plot_data(data, output_filename)
     print(f"A plot of the data can be found in {output_filename}.pdf.")
-
-# Run program if executed directly. If this file gets imported, main will not execute
+    
+"""
+Runs program if executed directly. If this file gets imported
+then main will not execute.
+This ensures that you can import the functions in this code 
+to a different program without the executing the function calls in main().
+"""
 if __name__ == '__main__':
     main()
