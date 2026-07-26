@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt
-import math
 """
 Uppgift 1: Förbättringar i strukturen
 
@@ -23,7 +21,7 @@ Fel som rättats:
 2. Programmet kunde inte hantera felformaterad data och kraschade. Ger
 nu en varning till användaren att data var felformaterad och vad 
 datan i det fältet var.
-3. Programmet kraschade vid tomma fält (bara whitespace eller cr)
+3. Programmet kraschade vid tomma rader (bara whitespace eller cr)
 Formateringsartefakter rensas nu bort i read_csv.
 
 Felhantering är implementerad i read_csv för inkorrekt formaterad data.
@@ -59,12 +57,14 @@ av koden från labbhäftet. if data is not None tillåter att cirkeln ritas
 ut även om mätdata saknas. 
 for loopen extraherar x och y för varje värde samt värdet. För varje
 batch i dicten anropas plot en gång. Plotlib sätter då en färg automatiskt
-och sedan ställs frågan om vilken färg den batchen fick med color().
+och sedan ställs frågan om vilken färg den batchen fick med get_color().
 Detta används för att sätta en unik färg på varje batch av mätvärden.
 Begränsas av antalet färger i default schemat i pltlib.
-
-
 """
+
+import matplotlib.pyplot as plt
+import math
+
 
 def format_csv_line(line):
     """
@@ -86,7 +86,7 @@ def read_csv(filename):
     
     Returns a dict with batch as key and list with values
     
-    This function will return a FileNotFoundError if unable to open the file
+    This function will raise a FileNotFoundError if unable to open the file
     FileNotFoundError will be caught in main()
 
     This function will remove empty lines (only whitespace or cr)
@@ -129,7 +129,7 @@ def check_is_within_unit_circle(x, y):
     return x**2 + y**2 <= 1
     
 
-def calc_batch_average(data):
+def calc_batch_average(measurements):
     """
     Calculate the avarage of input measurments within the unit circle
 
@@ -144,7 +144,7 @@ def calc_batch_average(data):
 
     total = 0
     count = 0
-    for x, y, value in data:
+    for x, y, value in measurements:
         if check_is_within_unit_circle(x,y):
             total += value
             count += 1
